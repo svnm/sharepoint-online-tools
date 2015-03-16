@@ -1,119 +1,69 @@
 var List = function () {
 
+    var GetAllItemsByListId = function(listId, fields, callback) {
+
+        var clientContext = new SP.ClientContext.get_current();
+        var list = clientContext.get_web().get_lists().getById(listId); // TODO: Or title?
+        var listItems = list.getItems('');
+        clientContext.load(listItems);   
+
+        clientContext.executeQueryAsync(
+            function (sender, args) {
+                var listItemEnumerator = listItems.getEnumerator();
+                var items = [];
+
+                while (listItemEnumerator.moveNext()) {
+                    var listItem = listItemEnumerator.get_current();
+                    var item = {};            
+                    item.id = listItem.get_id(),
+                    item.created = listItem.get_item('Created'),
+                    item.author = listItem.get_item('Author')
+                    item.authorId = item.author.$1E_1;
+                    item.author = item.author.$2e_1;
+
+                    // additional user specified fields            
+                    for(var i = 0; i < fields.length; i++){
+                        item[fields[i]] = listItem.get_item(fields[i])
+                    }
+                    items.push(item);
+                }
+
+                callback(items);
+            }, 
+            function (sender, args) {
+                console.log("failed to get items from list");    
+            }
+        );
+
+    }
 
 
-/* get list by id CAML */
+    var updateListItemByTitle = function (listTitle, results, listItemId, callback) {
 
-Apps.Search.GetMasterItems = function (callback) {
+        // results is an array of fields and values
 
-    var clientContext = new SP.ClientContext.get_current();
-    var list = clientContext.get_web().get_lists().getById("849b12a9-7036-495d-a8fd-293db302431d");
-    var listItems = list.getItems('');
-    /*
-    var camlQuery = new SP.CamlQuery();
-    camlQuery.Query = "<Where><Contains><FieldRef Name='AlphaCode' /><Value Type='Text'>AAH</Value></Contains></Where>";
-    var listItems = list.getItems(camlQuery);
-    */
-    clientContext.load(listItems);    
-    clientContext.executeQueryAsync(Function.createDelegate(this, function (sender, args) {
-        var listItemEnumerator = listItems.getEnumerator();
-        var items = [];
-        while (listItemEnumerator.moveNext()) {
-            var listItem = listItemEnumerator.get_current();
-            var item = { 
-                'AureconProjectNumber': listItem.get_item('AureconProjectNumber'),
-                'AlphaCode': listItem.get_item('AlphaCode'),
-                'WorkOrderName': listItem.get_item('WorkOrderName'),
-                'WOStatus': listItem.get_item('WOStatus'),
-                'id': listItem.get_id(),
-                'date': listItem.get_item('Created'),
-                'author': listItem.get_item('Author')
-            };   
-            item.authorId = item.author.$1E_1;
-            item.author = item.author.$2e_1;
-            item.AlphaCode = item.AlphaCode.$2e_1
-
-            items.push(item);
+        var clientContext = new SP.ClientContext();
+        var list = clientContext.get_web().get_lists().getByTitle(listTitle);
+        var listItem = list.getItemById(listItemId);
+        
+        for(var i = 0; i < results.length; i++){
+            results.set_item(results[i].field, results[i].value);
+            // e.g. listItem.set_item("Title", "this is a new title");
         }
-                
-        callback(items);        
-        
-    }), Function.createDelegate(this, function (sender, args) {
-        console.log("failed to get items from Master list");
-    }));
-}
 
-
-
-    /* Update item CAML query */
-
-    var updateSubscriptions = function () {
-        if($scope.userField === undefined){
-          return;
-        }
-
-        var clientContext = new SP.ClientContext("/");
-        var list = clientContext.get_web().get_lists().getByTitle("MyPreferences");
-        var listItem = {};
-        
-        if (typeof($scope.listItemID) === "undefined") {
-            listItem = list.addItem(new SP.ListItemCreationInformation());
-            listItem.set_item('Title', "MyPreferences");
-        } else {
-            listItem = list.getItemById($scope.listItemID);
-        }
-        
-        // flatten json string
-        var subscriptionsArray = JSON.parse($scope.subscriptions);
-        var subscriptions = JSON.stringify(subscriptionsArray);
-        
-        listItem.set_item("Author", $scope.userField);
-        listItem.set_item('CTValue', subscriptions);
         listItem.update();                
         clientContext.executeQueryAsync(
             function (sender, args) {
-                console.log('successfully updated subscriptions');
-                $scope.showSuccess();
+                callback(true);
             }, 
             function (sender, args) {
-                console.log('Request failed, adding new subscriptions');    
-                $scope.showFail();                                      
+                callback(false);
             }
         );
     };        
 
 
-    /* get list items REST */
-    /* with CT.Ajax... */
-
-    var getList = function (callback) {
-
-        var query = location.origin + "/_api/web/lists/GetByTitle('MyPreferences')/items";
-        query += "?$select=Id,Title,CTValue,Author/Id,Author/Title,Author/Name,Author/UserName&$expand=Author";
-        query += "&$filter=substringof('" + $scope.userName + "', Author/Name)";
-        var xhr = new CT.Ajax("GET", query);
-        xhr.run();
-    
-        xhr.onSuccess = function (obj) {
-
-            if(callback !== undefined){
-                callback(obj.d.results);
-            }
-        
-        }
-    };
-
-
-
     var AddItems = function (query) {
-        // lets use Client Object Model
-    };
-
-    var GetItems = function (qry, callback) {
-        // lets use Client Object Model
-    };
-
-    List.updateItems = function (query) {
         // lets use Client Object Model
     };
 
