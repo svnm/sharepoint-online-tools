@@ -67,7 +67,7 @@ var List = function () {
         // lets use Client Object Model
     };
 
-    List.deleteItems = function (query) {
+    var deleteItems = function (query) {
         // lets use Client Object Model
     };
 

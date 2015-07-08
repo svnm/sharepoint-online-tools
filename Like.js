@@ -1,6 +1,4 @@
-
-
-Apps.Blog.likeItem = function (listId, itemId, likeStatus, callback) {
+var likeItem = function (listId, itemId, likeStatus, callback) {
 	// List ID (without the curly-braces)
 	// List item ID
 	// like Status true or false
@@ -16,3 +14,5 @@ Apps.Blog.likeItem = function (listId, itemId, likeStatus, callback) {
 		});
 	});
 }
+
+module.exports = likeItem;

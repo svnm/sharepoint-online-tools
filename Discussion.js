@@ -1,6 +1,4 @@
-
-
-Apps.Blog.convertToHeirarchy = function (data) {
+var convertToHeirarchy = function (data) {
   var newData = [];	      
   var replies = [];
 
@@ -30,7 +28,7 @@ Apps.Blog.convertToHeirarchy = function (data) {
 }
 
 
-Apps.Blog.addComment = function (ListName, itemId, title, body) {
+var addComment = function (ListName, itemId, title, body) {
 	// itemId comes in for replies
 	
 	var clientContext = new SP.ClientContext("/ContentDiscussions");
@@ -48,7 +46,6 @@ Apps.Blog.addComment = function (ListName, itemId, title, body) {
     listItem.set_item("Body", body);
     listItem.set_item("IsQuestion", "false");
     listItem.set_item("SourceURL", title);
-    //listItem.set_item("PageContentOwner", contentOwnerId);
     listItem.update();
     clientContext.load(listItem);
     clientContext.executeQueryAsync(Function.createDelegate(this, function(sender, args) {
@@ -59,7 +56,7 @@ Apps.Blog.addComment = function (ListName, itemId, title, body) {
 }
 
 
-Apps.Blog.loadCommentsAndReplies = function (commentTitle, callback) {
+var loadCommentsAndReplies = function (commentTitle, callback) {
 
 	// using caml query as it is the only way to get likedBy and likeCount fields.	
 
@@ -103,7 +100,6 @@ Apps.Blog.loadCommentsAndReplies = function (commentTitle, callback) {
 	      			item.likedByYou = true;
 	      		}
 	      	}
-	      	// why are we using window.items
 	        items.push(item);
 	    }
 	    
@@ -162,4 +158,10 @@ Apps.Blog.loadCommentsAndReplies = function (commentTitle, callback) {
 	}), Function.createDelegate(this, function (sender, args) {
 		console.log("failed to get Discussion items");
 	}));    	
+}
+
+module.exports = {
+	convertToHeirarchy: this.convertToHeirarchy(),
+	addComment: this.addComment(),
+	loadCommentsAndReplies: this.loadCommentsAndReplies(),	
 }

@@ -29,36 +29,34 @@ var User = function(callback) {
 
     }
 
-
-
     
-    $scope.getUserId = function (userName, callback) {
+    var getUserId = function (userName, callback) {
         var clientContext = SP.ClientContext.get_current();
         var web = clientContext.get_web();
-        $scope.currentUser = web.ensureUser(userName);
+        this.currentUser = web.ensureUser(userName);
         clientContext.load(web);
-        clientContext.load($scope.currentUser);
+        clientContext.load(this..currentUser);
         clientContext.executeQueryAsync(function () {
-           var userid = $scope.currentUser.get_id();
+           var userid = this.currentUser.get_id();
            callback(userid);
         }, function (sender, args) {
            console.log('failed to get the current user');
            callback('could not find user');
         }); 
-    };
+    }
 
-    $scope.loadUserSubscriptions = function () {
-        $scope.getUser(function () {
+    var loadUserSubscriptions = function () {
+        this.getUser(function () {
             // get user then load their subscriptions
-            $scope.getUserSubscriptions();
+            this.getUserSubscriptions();
         });
-    };
+    }
 
 
-    $scope.getUserByName = function (callback) {
+    var getUserByName = function (callback) {
     
         // callback for getting user id will give the id, and allow us to set the user field.
-        $scope.getUserId($scope.userName, function (id) {
+        this.getUserId(this.userName, function (id) {
 
             var context = new SP.ClientContext();
             var user = context.get_web().getUserById(id);
@@ -66,28 +64,22 @@ var User = function(callback) {
             
             context.executeQueryAsync(
                 function () {
-                    $scope.userField = user.get_id() + ";#" + user.get_loginName();
-                    $scope.userValid = true;
-                    console.log($scope.userField);
-                    $scope.$apply();
-                    // now we have a valid user, get their subscriptions
+                    $this.userField = user.get_id() + ";#" + user.get_loginName();
+                    this.userValid = true;
                     callback();
                 },
                 function (sender, args) {
                     console.log('Error getting user properties');
-                    $scope.showFail();                          
-                    $scope.userValid = false;
-                    $scope.$apply();
+                    this.showFail();                  
+                    this.userValid = false;
                 }
             );
 
-        });            
-                                
-    };
+        });                                
+    }
 
 
-
-Apps.Search.IsCurrentUserMemberOfGroup = function(groupName, OnComplete) {
+    var IsCurrentUserMemberOfGroup = function(groupName, OnComplete) {
 
         var currentContext = new SP.ClientContext.get_current();
         var currentWeb = currentContext.get_web();
@@ -118,24 +110,23 @@ Apps.Search.IsCurrentUserMemberOfGroup = function(groupName, OnComplete) {
         function OnFailure(sender, args) {
             OnComplete(false);
         }    
-}
+    }
 
 
-Apps.Search.checkUserGroup = function () {
+    var checkUserGroup = function () {
 
-  Apps.Search.IsCurrentUserMemberOfGroup("Power Users", function (isCurrentUserInGroup) {
-      if(isCurrentUserInGroup){
-        Apps.Search.PowerUser = true;
-      } else {
-        Apps.Search.PowerUser = true; // change to true to debug edit forms
+      this.IsCurrentUserMemberOfGroup("Power Users", function (isCurrentUserInGroup) {
+          if(isCurrentUserInGroup){
+            Apps.Search.PowerUser = true;
+          } else {
+            Apps.Search.PowerUser = true;
+          }
+        });
       }
-  });
-}
 
-
-
-
-    return User;
+      return User;
+    }
+    
 }
 
 module.exports = User;
